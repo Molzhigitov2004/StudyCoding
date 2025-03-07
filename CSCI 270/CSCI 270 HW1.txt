@@ -1,0 +1,145 @@
+bool CentroidsPlacement(vector<int>& location, int k, int MaxDistance) {
+    int usedCentroids = 1;
+    int lastCover = location[0]+MaxDistance;
+    
+    for (int i = 1; i < location.size(); i++) {
+        if (location[i] > lastCover + MaxDistance) {  
+            usedCentroids++;  
+            lastCover = location[i]+MaxDistance;
+            if (usedCentroids > k) return false;  
+        }
+    }
+    
+    return true;
+}
+
+int getMaximumDistance(vector<int> location, int k) {
+    if(location.size() == k) return 0;
+    QuickSort(location, 0, location.size()-1);
+    int low = 0;
+    int high = location[location.size()-1] - location[0];
+    
+    while (low <= high) {
+        int middle = low + (high - low) / 2;
+        if (CentroidsPlacement(location, k, middle)) {
+            high = middle - 1;
+        } else {
+            low = middle + 1;
+        }
+    }
+    return low;
+}
+
+
+////////////////////////////////////////////////////////////////////
+
+int minOperations(vector<int> arr) {
+    int n = arr.size(); //Edge case
+    if (n <= 1) return 0;
+
+    //LHLHLHL...
+    int LH = 0;
+    bool skip = false;
+    
+    for (int i = 1; i < n; i++) {
+        if (skip) {
+            skip = false;
+            continue;
+        }
+        
+        bool odd = (i % 2 == 1);
+        if (odd) {
+            if (arr[i - 1] < arr[i]) continue;
+        } else {
+            if (arr[i - 1] > arr[i]) continue;
+        }
+        LH++;
+        skip = true;
+    }
+
+    //HLHLHLH...
+    int HL = 0;
+    skip = false;
+    
+    for (int i = 1; i < n; i++) {
+        if (skip) {
+            skip = false;
+            continue;
+        }
+        
+        bool even = (i % 2 == 0);
+        if (even) {
+            if (arr[i - 1] < arr[i]) continue;
+        } else {
+            if (arr[i - 1] > arr[i]) continue;
+        }
+        HL++;
+        skip = true;
+    }
+
+    return (HL < LH)? HL : LH;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+long beacon_signal(int x1, int y1, int x2, int y2, int xl, int yl, int R) {
+    if (x2 < xl - R || x1 > xl + R || y2 < yl - R || y1 > yl + R) {
+        return 0;
+    }
+    if (x2 == xl - R || x1 == xl + R || y2 == yl - R || y1 == yl + R) {
+        long int illuminatedNodes = 0;
+        if (x2 == xl - R) illuminatedNodes++;
+        if (x1 == xl + R) illuminatedNodes++;
+        if (y2 == yl - R) illuminatedNodes++;
+        if (y1 == yl + R) illuminatedNodes++;
+        return illuminatedNodes;
+    }
+    
+    long int illuminatedNodes = 0;
+    long int rSq = static_cast<long>(R) * R;
+    
+    int left = max(x1, xl - R);
+    int right = min(x2, xl + R);
+    int bottom = max(y1, yl - R);
+    int top = min(y2, yl + R); 
+    
+    for (int i = bottom; i <= top; i++) {
+        int dy = i - yl;
+        int dxMax = static_cast<int>(std::sqrt(rSq - dy * dy));
+        int Dleft = std::max(left, xl - dxMax);
+        int Dright = std::min(right, xl + dxMax);
+        illuminatedNodes += (Dright - Dleft + 1);
+    }
+    return illuminatedNodes;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+vector<string> processLogs(vector<string> logs, int threshold) {
+    map<string, int> frequencies;
+    for(int i = 0; i < logs.size(); i++){
+        istringstream stream(logs[i]); 
+        string id1;
+        stream >> id1;
+        
+        string id2;
+        stream >> id2;
+        
+        string amount;
+        stream >> amount;
+        
+        if(id1 == id2){
+            frequencies[id1]++;
+        } else {
+            frequencies[id1]++;
+            frequencies[id2]++;  
+        }
+    }
+    
+    vector<string> suspected;
+    for(const auto& frequency : frequencies){
+        if(frequency.second >= threshold) suspected.push_back(frequency.first);
+    }
+    mergeSort(suspected);
+    return suspected;
+}
